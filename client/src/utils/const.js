@@ -1,0 +1,8 @@
+export const AUTH_BASE_URL = '/api/auth'
+export const USERS_BASE_URL = '/api/user'
+export const EMPLOYEES_BASE_URL = '/api/employees'
+export const RECRUITMENT_BASE_URL = '/api/recruitment'
+export const TRAINING_BASE_URL = '/api/training'
+export const FEEDBACK_BASE_URL = '/api/feedback'
+export const EVENTS_BASE_URL = '/api/events'
+export const ABSENTEEISM_BASE_URL = '/api/absenteeism'
