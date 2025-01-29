@@ -1,3 +1,8 @@
 {
-    "editor.formatOnSave": true
+  "editor.formatOnSave": true,
+  "files.exclude": {
+    "server\\models\\Feedback.js": true,
+    "server\\models\\Posts.js": true,
+    "server\\models\\Payroll.js": true
+  }
 }

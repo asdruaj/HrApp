@@ -98,10 +98,12 @@ const AbsenteeismScreen = () => {
 
   const handleDeleteEvent = async (id) => {
     try {
-      await deleteEvent(id)
-      clearInputs()
-      setIsModalOpen(false)
-      toast.success('Evento eliminado correctamente', { position: 'bottom-right' })
+      if (confirm('¿Seguro que desea eliminar este registro?')) { //eslint-disable-line
+        await deleteEvent(id)
+        clearInputs()
+        setIsModalOpen(false)
+        toast.success('Evento eliminado correctamente', { position: 'bottom-right' })
+      }
     } catch (err) {
       toast.error(err?.data?.message || err.error)
       console.log(err)
@@ -316,6 +318,9 @@ const AbsenteeismScreen = () => {
             <option className='hidden' value=''>Seleccione una opción...</option>
             <option value='vacation'>Vacaciones</option>
             <option value='sickness'>Baja por enfermedad</option>
+            <option value='motherhood'>Maternidad</option>
+            <option value='fatherhood'>Paternidad</option>
+            <option value='family loss'>Muerte de familiar directo (3 días min)</option>
           </select>
         </div>
 

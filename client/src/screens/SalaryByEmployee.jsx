@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useGetEmployeeeQuery, useUpdateWithdrawalMutation } from '../state/employeesApiSlice'
-import { Select, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow, TextInput } from 'flowbite-react'
+import { Button, Select, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow, TextInput } from 'flowbite-react'
 import { useSelector } from 'react-redux'
-import { FaCheck, FaDollarSign, FaFloppyDisk, FaPencil } from 'react-icons/fa6'
+import { FaCheck, FaDollarSign, FaDownload, FaFloppyDisk, FaPencil } from 'react-icons/fa6'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import { toast } from 'sonner'
+import { useGetAllAbsenteeismsQuery } from '../state/absenteeismApiSlice'
+import { PDFDownloadLink } from '@react-pdf/renderer'
+import PDFpayment from '../components/PDFpayment'
+
+dayjs.extend(utc)
+dayjs.extend(isSameOrBefore)
+dayjs.extend(isSameOrAfter)
 
 const SalaryByEmployee = () => {
   // LÓGICA GENERAL
 
   const { id } = useParams()
   const { data: employee, isLoading, refetch } = useGetEmployeeeQuery(id)
+  const { data: absenteeism } = useGetAllAbsenteeismsQuery()
   const { rates } = useSelector(state => state.bcv)
 
   const hiringDate = dayjs(employee?.hiringDate)
@@ -62,6 +73,71 @@ const SalaryByEmployee = () => {
   const integralDailySalary = (dailySalary && utilitiesDailyFraction && vacationBonus) && dailySalary + utilitiesDailyFraction + vacationBonus
 
   const integralMonthlySalary = integralDailySalary && Math.round((integralDailySalary * 30) * 100 / 100).toFixed(2)
+
+  // deduccciones
+
+  const [events, setEvents] = useState([])
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const response = await fetch('/api/mocks')
+      const mockData = await response.json()
+      const employeeData = mockData.find(person => person.idDocument === employee?.idDocument)
+      if (employeeData) {
+        const newEvents = employeeData.attendance.map(day => {
+          const entryTime = dayjs(day.entry)
+          const exitTime = dayjs(day.exit)
+          return {
+            title: `Entrada: ${entryTime}, Salida: ${exitTime}`,
+            start: dayjs(day.entry).format('YYYY-MM-DD'),
+            end: dayjs(day.exit).format('YYYY-MM-DD')
+          }
+        })
+        setEvents(newEvents)
+      }
+    }
+
+    fetchEvents()
+  }, [employee])
+
+  const isWeekend = (date) => { const day = dayjs(date).day(); return day === 0 || day === 6 }
+
+  const getAbsentDays = (attendance, startDate, endDate) => {
+    const absentDays = []
+    let currentDate = dayjs(startDate)
+    while (currentDate.isSameOrBefore(dayjs(endDate))) {
+      const dateString = currentDate.format('YYYY-MM-DD')
+
+      const isAbsent = !attendance.some(({ start, end }) => {
+        const startDate = dayjs(start).format('YYYY-MM-DD')
+        const endDate = dayjs(end).format('YYYY-MM-DD')
+
+        return dayjs(dateString).isSameOrAfter(startDate) && dayjs(dateString).isSameOrBefore(endDate)
+      })
+
+      const hasPermit = absenteeism?.some((item) => {
+        const startDate = dayjs(item.start).format('YYYY-MM-DD')
+        const endDate = dayjs(item.end).format('YYYY-MM-DD')
+
+        console.log(attendance)
+        return item.employee._id === employee?._id && dayjs(dateString).isSameOrAfter(startDate) && dayjs(dateString).isSameOrBefore(endDate)
+      })
+
+      if (!hasPermit && isAbsent && !isWeekend(dateString)) {
+        absentDays.push(dateString)
+      }
+      currentDate = currentDate.add(1, 'day')
+    } return absentDays
+  }
+
+  const [absentDays, setAbsentDays] = useState('')
+
+  useEffect(() => {
+    const startDate = dayjs.utc().startOf('month').format('YYYY-MM-DD')
+    const endDate = dayjs.utc().format('YYYY-MM-DD')
+
+    setAbsentDays(getAbsentDays(events, startDate, endDate).length)
+    console.log(getAbsentDays(events, startDate, endDate))
+  }, [events])
 
   // LÓGICA UTILIDADES
 
@@ -455,7 +531,28 @@ const SalaryByEmployee = () => {
 
         {/* Bloque PAGO DEL MES */}
         <div id='worker-container' className='bg-slate-50 dark:bg-slate-800 dark:border-2 border-slate-600 shadow-lg rounded-md w-full max-w-xl overflow-auto max-h-[32rem] dark:text-slate-50 '>
-          <h2 className='text-lg font-semibold px-4 py-2 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 sticky top-0 z-10'>Pago del Mes</h2>
+          <h2 className='text-lg font-semibold px-4 py-2 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 flex justify-between'>Pago del Mes
+
+            <Button color='blue' className='[&>*]:gap-2 h-8 mt-4 [&>*]:items-center w-12'>
+              <PDFDownloadLink
+                className='flex gap-2' document={<PDFpayment data={
+              {
+                firstName: employee?.firstName,
+                lastName: employee?.lastName,
+                id: employee?.idDocument,
+                payFrequency: employee?.payFrequency,
+                retentionTotal: deductions?.retentionTotal,
+                paroTotal: deductions?.paroTotal,
+                LPHtotal: deductions?.LPHtotal,
+                unjustifiedAbsences: absentDays,
+                monthlyTotal: deductions?.monthlyTotal,
+                baseSalary: employee?.baseSalary.$numberDecimal
+              }
+            } />} fileName= {`Pago del Mes`}> {/* eslint-disable-line */}
+                <FaDownload />
+              </PDFDownloadLink>
+            </Button>
+          </h2>
           {
       isLoading
         ? <Spinner />
@@ -512,13 +609,18 @@ const SalaryByEmployee = () => {
                 <span className='font-bold opacity-50 select-none ml-2'>BsS.</span>
               </span>
             </p>
+            <p className='ml-2 flex justify-between mr-8'>Bajas Injustificadas ({absentDays}):
+              <span className='text-red-700 dark:text-red-500'>-{(employee?.baseSalary.$numberDecimal / 30) * absentDays || 0}
+                <span className='font-bold opacity-50 select-none ml-2'>BsS.</span>
+              </span>
+            </p>
           </div>
 
           <hr className='h-px border-0 dark:bg-gray-700 bg-slate-300' />
 
           <div className='mt-8'>
             <h3 className='ml-2 flex justify-between mr-8 font-bold'>Total de Sueldo el 30:
-              <span className='font-normal'>{employee.payFrequency === 'Mensual' ? parseFloat(employee?.baseSalary.$numberDecimal - deductions.monthlyTotal) : parseFloat((employee?.baseSalary.$numberDecimal / 2) - deductions.monthlyTotal)}
+              <span className='font-normal'>{employee.payFrequency === 'Mensual' ? parseFloat(employee?.baseSalary.$numberDecimal - deductions.monthlyTotal - ((employee?.baseSalary.$numberDecimal / 30) * absentDays)) : parseFloat((employee?.baseSalary.$numberDecimal / 2) - deductions.monthlyTotal - ((employee?.baseSalary.$numberDecimal / 30) * absentDays))}
                 <span className='font-bold opacity-50 select-none ml-2'>BsS.</span>
               </span>
             </h3>

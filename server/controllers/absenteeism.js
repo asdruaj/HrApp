@@ -64,6 +64,12 @@ export const saveAbsenteeism = async (req, res) => {
 
       savedAbsenteeism = await newAbsenteeism.save()
       employeeEdited = await Employee.findOneAndUpdate({ _id: employee }, { $inc: { sickDays: -dayDiff } }, { new: true, select: 'sickDays' }).session(session)
+    } else if (reason.toLowerCase() === 'motherhood') {
+      savedAbsenteeism = await newAbsenteeism.save()
+    } else if (reason.toLowerCase() === 'fatherhood') {
+      savedAbsenteeism = await newAbsenteeism.save()
+    } else if (reason.toLowerCase() === 'family loss') {
+      savedAbsenteeism = await newAbsenteeism.save()
     } else {
       employeeEdited = await Employee.findOneAndUpdate({ _id: employee }, { $inc: { unjustifiedAbsences: dayDiff } }, { new: true, select: 'unjustifiedAbsences' }).session(session)
     }

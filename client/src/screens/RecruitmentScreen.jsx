@@ -1,6 +1,6 @@
 import { Button, FileInput, Modal, Select, Spinner } from 'flowbite-react'
 import React, { useRef, useState } from 'react'
-import { FaCircle, FaEnvelope, FaHelmetSafety, FaIdCard, FaMagnifyingGlass, FaPlus, FaTrashCan, FaUser, FaUserGroup } from 'react-icons/fa6'
+import { FaCircle, FaCircleExclamation, FaEnvelope, FaHelmetSafety, FaIdCard, FaMagnifyingGlass, FaPlus, FaTrashCan, FaUser, FaUserGroup } from 'react-icons/fa6'
 import FormInput from '../components/FormInput'
 import { toast } from 'sonner'
 import { useDeleteRecruitmentMutation, useEditRecruitmentMutation, useGetAllRecruitmentsQuery, useLazyGetRecruitmentQuery, useSaveRecruitmentMutation } from '../state/recruitmentApiSlice'
@@ -36,6 +36,17 @@ const RecruitmentScreen = () => {
   const navigate = useNavigate()
 
   const [filter, setFilter] = useState('')
+
+  const [deleteModal, setDeleteModal] = useState(false)
+
+  const deleteItem = async (deleteId) => {
+    await deleteRecruitment(deleteId)
+    setDeleteModal(false)
+  }
+  const handleDeleteModal = (id) => {
+    setSelectedId(id)
+    setDeleteModal(true)
+  }
 
   const filteredData = data?.filter((item) =>
     item?.firstName?.toLowerCase().includes(filter?.toLowerCase()) ||
@@ -116,7 +127,7 @@ const RecruitmentScreen = () => {
     },
     {
       name: '',
-      cell: row => <button disabled={isDeletingRecruitment} onClick={() => deleteRecruitment(row._id)} className='hover:text-red-800 mr-2 transition-all'>{isDeletingRecruitment ? <Spinner /> : <FaTrashCan className='w-4 h-4' id={row._id} />}</button>,
+      cell: row => <button disabled={isDeletingRecruitment} onClick={() => handleDeleteModal(row._id)} className='hover:text-red-800 mr-2 transition-all'>{isDeletingRecruitment ? <Spinner /> : <FaTrashCan className='w-4 h-4' id={row._id} />}</button>,
       button: 'true',
       width: '2rem'
     }
@@ -422,6 +433,25 @@ const RecruitmentScreen = () => {
         </form>
       </Modal>
 
+      <Modal show={deleteModal} size='md' onClose={() => setDeleteModal(false)} popup>
+        <Modal.Header />
+        <Modal.Body>
+          <div className='text-center'>
+            <FaCircleExclamation className='mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200' />
+            <h3 className='mb-5 text-lg font-normal text-gray-500 dark:text-gray-400'>
+              ¿Está seguro/a que desea eliminar este registro?
+            </h3>
+            <div className='flex justify-center gap-4'>
+              <Button color='failure' onClick={() => deleteItem(selectedId)}>
+                Sí, estoy seguro/a
+              </Button>
+              <Button color='gray' onClick={() => setDeleteModal(false)}>
+                No, cancelar
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   )
 }

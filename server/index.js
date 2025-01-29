@@ -101,7 +101,6 @@ app.get('/api/mocks', (req, res) => {
 
 // RUTINA PARA AÑADIR ENTRADAS A PRESTACIONES SOCIALES
 cron.schedule('0 3 1 * *', async () => {
-  console.log('Ejecutando cron job todos los días a las 12:00am para añadir entradas trimestrales')
   await addQuarterlyEntries()
 })
 

@@ -256,6 +256,7 @@ export const addQuarterlyEntries = async () => {
   }
 }
 
+
 export const updateWithdrawal = async (req, res) => {
   const { employeeId, socialBenefitId } = req.params
   const { totalWithdraw, interestWithdraw, rate } = req.body

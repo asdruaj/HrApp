@@ -90,10 +90,15 @@ const EventsScreen = () => {
 
   const handleDeleteEvent = async (id) => {
     try {
-      await deleteEvent(id)
-      clearInputs()
-      setIsModalOpen(false)
-      toast.success('Evento eliminado correctamente', { position: 'bottom-right' })
+      if (confirm('¿Seguro que desea eliminar este registro?')) { //eslint-disable-line
+        await deleteEvent(id)
+        clearInputs()
+        setIsModalOpen(false)
+        toast.success('Evento eliminado correctamente', { position: 'bottom-right' })
+      } else {
+        // Do nothing!
+        console.log('Thing was not saved to the database.')
+      }
     } catch (err) {
       toast.error(err?.data?.message || err.error)
       console.log(err)

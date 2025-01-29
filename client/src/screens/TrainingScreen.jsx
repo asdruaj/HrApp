@@ -1,15 +1,16 @@
 import { Avatar, Button, Card, Modal, Spinner } from 'flowbite-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { FaBuildingUser, FaCircle, FaCircleUser, FaMagnifyingGlass, FaPeopleGroup, FaPlus, FaTrashCan, FaUser, FaUserGroup } from 'react-icons/fa6'
+import { FaBuildingUser, FaCircle, FaCircleExclamation, FaCircleUser, FaMagnifyingGlass, FaPeopleGroup, FaPlus, FaTrashCan, FaUser, FaUserGroup } from 'react-icons/fa6'
 import FormInput from '../components/FormInput'
 import DepartmentInput from '../components/DepartmentInput'
 import { toast, Toaster } from 'sonner'
-
 import DataTable from 'react-data-table-component'
 import { useDeleteTrainingMutation, useEditTrainingMutation, useGetAllTrainingsQuery, useLazyGetTrainingQuery, useSaveTrainingMutation } from '../state/trainingApiSlice'
 import { useGetEmployeesQuery, useSaveTrainingToUserMutation } from '../state/employeesApiSlice'
 import dayjs from 'dayjs'
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import 'dayjs/locale/es'
+dayjs.extend(isSameOrAfter)
 
 dayjs.locale('es')
 
@@ -37,6 +38,17 @@ const TrainingScreen = () => {
   const [updateTraining, { isLoading: isUpdating }] = useEditTrainingMutation()
 
   const [filter, setFilter] = useState('')
+
+  const [deleteModal, setDeleteModal] = useState(false)
+
+  const deleteItem = async (deleteId) => {
+    await deleteTraining(deleteId)
+    setDeleteModal(false)
+  }
+  const handleDeleteModal = (id) => {
+    setSelectedId(id)
+    setDeleteModal(true)
+  }
 
   const filteredData = data?.filter((item) =>
     item?.courseName?.toLowerCase().includes(filter?.toLowerCase()) ||
@@ -106,14 +118,16 @@ const TrainingScreen = () => {
       name: 'Asistencia',
       selector: row => row._id,
       cell: (row) => {
-        return <button className='bg-blue-500 hover:bg-blue-700 transition-colors p-1 rounded-full' onClick={() => handleOpenAssistModal(row._id)}><FaPeopleGroup className='h-5 w-5' /></button>
+        return dayjs().isSameOrAfter(dayjs(row.endDate))
+          ? <button className='bg-blue-500 hover:bg-blue-700 transition-colors p-1 rounded-full' onClick={() => handleOpenAssistModal(row._id)}><FaPeopleGroup className='h-5 w-5' /></button>
+          : ''
       },
       button: 'true'
     },
 
     {
       name: '',
-      cell: row => <button disabled={isDeleting} onClick={() => deleteTraining(row._id)} className='hover:text-red-800 mr-2 transition-all'>{isDeleting ? <Spinner /> : <FaTrashCan className='w-4 h-4' id={row._id} />}</button>,
+      cell: row => <button disabled={isDeleting} onClick={() => handleDeleteModal(row._id)} className='hover:text-red-800 mr-2 transition-all'>{isDeleting ? <Spinner /> : <FaTrashCan className='w-4 h-4' id={row._id} />}</button>,
       button: 'true',
       width: '3rem'
     }
@@ -516,6 +530,25 @@ const TrainingScreen = () => {
         </form>
       </Modal>
 
+      <Modal show={deleteModal} size='md' onClose={() => setDeleteModal(false)} popup>
+        <Modal.Header />
+        <Modal.Body>
+          <div className='text-center'>
+            <FaCircleExclamation className='mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200' />
+            <h3 className='mb-5 text-lg font-normal text-gray-500 dark:text-gray-400'>
+              ¿Está seguro/a que desea eliminar este registro?
+            </h3>
+            <div className='flex justify-center gap-4'>
+              <Button color='failure' onClick={() => deleteItem(selectedId)}>
+                Sí, estoy seguro/a
+              </Button>
+              <Button color='gray' onClick={() => setDeleteModal(false)}>
+                No, cancelar
+              </Button>
+            </div>
+          </div>
+        </Modal.Body>
+      </Modal>
     </>
   )
 }

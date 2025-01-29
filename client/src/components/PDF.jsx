@@ -11,6 +11,7 @@ const styles = StyleSheet.create({
   header: { marginHorizontal: 30, marginTop: 30 },
   section: { margin: 30 },
   paragraph: { marginBottom: 15 },
+  paragraphShort: { marginBottom: 5 },
   paragraphLong: { marginBottom: 60 }
 })
 
@@ -26,7 +27,7 @@ const PDF = ({ data }) => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.paragraph}>Por medio de la presente, MarOil Trading INC., con Registro de Información Fiscal (RIF) [Número de RIF], tiene el honor de solicitar la apertura de una cuenta corriente para nómina a nombre de {data.firstName} {data.lastName}, cuyo Documento de Identidad (C.I.) es {data.idDocument}, con el fin de realizar el pago de sus remuneraciones a través de este medio.</Text>
+          <Text style={styles.paragraph}>Por medio de la presente, MarOil Trading INC., con Registro de Información Fiscal (RIF) J-23412341-8, tiene el honor de solicitar la apertura de una cuenta corriente para nómina a nombre de {data.firstName} {data.lastName}, cuyo Documento de Identidad (C.I.) es {data.idDocument}, con el fin de realizar el pago de sus remuneraciones a través de este medio.</Text>
           <Text style={styles.paragraph}>{data.firstName} {data.lastName} se ha incorporado recientemente a nuestra nómina como {data.position}</Text>
           <Text style={styles.paragraph}>Solicitamos que la cuenta sea abierta con las siguientes características:
 
@@ -45,8 +46,20 @@ const PDF = ({ data }) => {
           <Text style={styles.paragraphLong}>
             Agradecemos su atención a esta solicitud y esperamos contar con su pronta respuesta. Quedamos a su entera disposición para cualquier información adicional que puedan requerir.
           </Text>
-          <Text style={styles.paragraph}>
+          <Text style={styles.paragraphShort}>
             Atentamente,
+          </Text>
+          <Text style={styles.paragraphShort}>
+            Maria Rojas
+          </Text>
+          <Text style={styles.paragraphShort}>
+            C.I. 11987263
+          </Text>
+          <Text style={styles.paragraphShort}>
+            rojas.maria@maroiltrading.com.ve
+          </Text>
+          <Text style={styles.paragraph}>
+            0424-212-3212
           </Text>
           <Text>
             _________________________
