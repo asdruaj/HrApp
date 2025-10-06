@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import Recruitment from '../models/recruitment.js'
+import Recruitment from '../models/Recruitment.js'
 
 export const getEveryRecruitment = async (req, res) => {
   try {
