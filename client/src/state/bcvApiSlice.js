@@ -5,7 +5,7 @@ export const bcvApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getBcv: builder.query({
       query: () => ({
-        url: 'api/bcv',
+        url: '/api/bcv',
         method: 'GET'
       }),
       async onQueryStarted (id, { dispatch, queryFulfilled }) {

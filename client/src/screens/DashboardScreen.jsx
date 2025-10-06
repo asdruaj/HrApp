@@ -1,5 +1,5 @@
 import { useGetEmployeesQuery } from '../state/employeesApiSlice'
-import { FaBook, FaHelmetSafety } from 'react-icons/fa6'
+import { FaHelmetSafety } from 'react-icons/fa6'
 import { Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow } from 'flowbite-react'
 
 import { useNavigate } from 'react-router-dom'
