@@ -116,26 +116,6 @@ app.use('/api/events', eventsRoutes)
 app.use('/api/absenteeism', absenteeismRoutes)
 app.use('/api/payroll', payrollRoutes)
 
-/* STATIC ASSET & SPA FALLBACK SETUP) */
-
-// NOTE: We assume your client build is in a sibling directory named 'client/dist' relative to the server folder.
-// Adjust 'client/dist' if your build path is different (e.g., 'client/build').
-const CLIENT_BUILD_PATH = path.resolve(__dirname, '..', 'client', 'dist')
-
-// Serve static files from the React build directory
-app.use(express.static(CLIENT_BUILD_PATH))
-
-// Catch-all route: For any GET request not handled by an API route, serve index.html
-app.get('*', (req, res) => {
-  // Check if the request is trying to hit a non-existent API route
-  if (!req.path.includes('api')) {
-    res.sendFile(path.resolve(CLIENT_BUILD_PATH, 'index.html'))
-  } else {
-    // If it looks like a failed API call, let it 404
-    res.status(404).send('Not Found')
-  }
-})
-
 /* MONGOOSE SETUP */
 const PORT = process.env.PORT || 6001
 
